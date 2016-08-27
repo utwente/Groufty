@@ -1,0 +1,27 @@
+# Defines application settings that are to be used during integration tests
+# Most notabable:
+# - in-memory H2 database as to not litter the test server and provide reliable, deterministic results
+# - info-level logging
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:groufty;MODE=PostgreSQL;DB_CLOSE_DELAY=-1' # in-memory
+    username: 'sa'
+    password: ''
+  jpa:
+    hibernate:
+      ddl-auto: create # no need for drop
+
+logging:
+  level:
+    ROOT: 'INFO'
+
+server:
+  port: 0 # user random free port
+
+groufty:
+  authentication:
+    enable-ldap-auth: false # slows down wrong credentials significantly if the ldap server cannot be reached
+    enable-dev-auth: true
+    always-logged-in-user: ''

@@ -1,0 +1,68 @@
+<div class="container-fluid">
+    <div class="col-md-offset-1" *ngIf="showErrorPage">
+        <h1>{{ errorMsg }}</h1>
+    </div>
+    <div class="row" *ngIf="!showErrorPage">
+        <div class="col-md-offset-1" [ngClass]="{'col-md-5': defaultFocus, 'col-md-3': rightFocus}">
+            <div class="row">
+                <h1 class="clickable-header" (click)="changeTaskSize()">
+                    <span class="fa" [ngClass]="{'fa-caret-right': !expandTask, 'fa-caret-down': expandTask}"></span>
+                    {{ reviewDetail.taskName }}
+                </h1>
+                <div *ngIf="expandTask">
+                    <h3>Description</h3>
+                    <markdown [md]="reviewDetail.taskDescription"></markdown>
+                    <pdf *ngIf="hasTaskPdf" [file]="'api/v1/tasks/' + reviewDetail.taskId + '/file'"></pdf>
+                </div>
+            </div>
+
+            <div class="row">
+                <h1 class="clickable-header" (click)="changeSubmissionSize()">
+                    <span class="fa"
+                          [ngClass]="{'fa-caret-right': !expandSubmission, 'fa-caret-down': expandSubmission}"></span>
+                    Submission<small *ngIf="!anonymousSubmitter"> by {{ reviewDetail.submitterName }}</small>
+                </h1>
+                <div *ngIf="expandSubmission">
+                    <div *ngIf="pdfSubmission">
+                        <pdf *ngIf="displaySubmission" [file]="'api/v1/submissions/by-review/' + reviewDetail.reviewId + '/file'"></pdf>
+                        <span *ngIf="!displaySubmission">
+	                        <alert [dismissible]="false">No pdf was submitted.</alert>
+                        </span>
+                    </div>
+                    <div *ngIf="!pdfSubmission && !fileSubmission">
+                        <markdown [md]="reviewDetail.submissionText"></markdown>
+                    </div>
+                    <div *ngIf="fileSubmission">
+                        <a *ngIf="displaySubmission" href="api/v1/submissions/by-review/{{ reviewDetail.reviewId }}/file" class="btn btn-default">
+                            <span class="fa fa-download"></span> Download submission
+                        </a>
+                        <span *ngIf="!displaySubmission">
+	                        <alert [dismissible]="false">No file was submitted.</alert>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div [ngClass]="{'col-md-5': defaultFocus, 'col-md-7': rightFocus}">
+            <h1 class="clickable-header page-title" (click)="setRightFocus()">
+                <span class="fa" [ngClass]="{'fa-compress': rightFocus, 'fa-expand': defaultFocus}"></span>
+                Review
+                <small> deadline {{ reviewDetail.reviewDeadline | moment:"YYYY-MM-DD HH:mm" }}</small>
+            </h1>
+            <p *ngIf="groupReview">You are writing this review as {{ reviewDetail.reviewerName }}</p>
+            <h4>State
+                <small>
+                    <span *ngIf="submitted">Submitted</span>
+                    <span *ngIf="!submitted">Open</span>
+                </small>
+            </h4>
+            <p>
+                <span *ngIf="deadlinePassed">
+                    <alert [dismissible]="false">Review deadline has passed. You can no longer edit this review.</alert>
+                </span>
+                <review-template [editable]="!deadlinePassed" [template]="reviewDetail.reviewTemplateId"
+                                [review]="reviewDetail.reviewId" [flaggable]="false"
+                                [grades]="reviewDetail.showGradesToReviewers"></review-template></p>
+        </div>
+    </div>
+</div>

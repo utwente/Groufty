@@ -1,0 +1,39 @@
+# Development configuration
+# Options set in this file will only be active when the "dev" profile is active (so during development)
+
+spring:
+  devtools:
+    restart: enabled
+
+  # Use h2 for the database
+  # This is an in-memory self-hosted SQL database so the app doesn't depend on postgres during development
+  datasource:
+    driver-class-name: org.h2.Driver
+    # use h2 db temporary storage w/ postgres compat
+    # the db can be reached from an external tool via jdbc:h2:tcp://localhost/mem:groufty
+    url: 'jdbc:h2:mem:groufty;MODE=PostgreSQL;DB_CLOSE_DELAY=-1'
+    username: 'sa'
+    password: ''
+    data: file:./testdata/testdata.sql
+    initialize: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  jackson:
+    serialization-inclusion:
+
+logging:
+  level:
+    nl.javalon.groufty: 'DEBUG'
+    ROOT: 'INFO'
+
+security:
+  basic:
+    enabled: false
+
+groufty:
+  authentication:
+    enable-ldap-auth: true
+    enable-dev-auth: true

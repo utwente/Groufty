@@ -1,0 +1,359 @@
+//Import font-awesome
+@import "../node_modules/font-awesome/less/font-awesome.less";
+
+//Import bootstrap
+@import "../node_modules/bootstrap/less/bootstrap.less";
+
+//Import PDF viewer
+@import "pdf-viewer.less";
+
+//Import Google Web Font for Ubuntu
+@import url(https://fonts.googleapis.com/css?family=Ubuntu:400,300,700,700italic,400italic,300italic);
+
+//Font awesome directory
+@fa-font-path:            "../fonts";
+
+//Font variables
+@font-family-sans-serif:  "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif:       Georgia, "Times New Roman", Times, serif;
+@font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
+
+html, body {
+  height:100%;
+}
+
+body {
+  padding-top:51px;
+
+  #groufty-app {
+    min-height:100%;
+    height:100%;
+
+    #wrapper {
+      padding-bottom: 60px;
+      min-height: 100%;
+      margin: 0 auto -60px; /* the bottom margin is the negative value of the footer's height */
+    }
+  }
+
+  footer {
+    width:100%;
+    height:60px;
+    padding:12px 0;
+    background-color: #4a4a4a;
+    color: #ffffff;
+
+    .images img {
+      max-height: 36px;
+    }
+
+    p {
+      margin-bottom: 0;
+      overflow:hidden;
+      white-space:nowrap;
+
+      &.build-info {
+        color: #959595;
+        font-size: 0.85em;
+      }
+    }
+  }
+}
+
+h1, .h1, h2, .h2, h3, .h3 {
+  overflow:hidden;
+}
+
+.clickable-header {
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+canvas {
+  width:100%;
+}
+
+nav .navbar-collapse {
+  transition: all 0.35s ease-in-out;
+}
+
+.file-upload-well {
+  &.file-hover-border {
+    border: dotted 3px lightgray;
+
+    &.file-hover {
+      border: dotted 3px red;
+    }
+  }
+
+  iframe {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  form.hidden {
+    display: none;
+  }
+
+  fieldset.form-group {
+    margin-bottom: 5px;
+    margin-right: 0;
+    margin-left: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  input.file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
+
+  .large-icon {
+    font-size:400%;
+
+    &.success {
+      color: @state-success-text;
+    }
+
+    &.danger {
+      color: @state-danger-text;
+    }
+  }
+}
+
+.panel-heading-tools {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-right: 6px;
+
+  .panel-title {
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+}
+
+.property-tools {
+  margin-top:5px;
+}
+
+.list-tool-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-right: 6px;
+
+  &:hover {
+    text-decoration: none;
+    color: #555;
+    background-color: #f5f5f5;
+  }
+
+  .item-title {
+    color: #555;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    p {
+      margin:0;
+    }
+  }
+}
+
+a {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+table {
+  &.row-hover {
+    > tbody > tr {
+      &:hover {
+        background-color: #f5f5f5;
+        cursor: pointer;
+      }
+
+      &.disable-hover:hover {
+        background-color: transparent;
+        cursor: auto;
+      }
+    }
+
+    > thead > tr {
+      &:hover {
+        background-color: transparent;
+        cursor: auto;
+      }
+    }
+  }
+
+  &.cell-middle {
+    >tbody, >thead {
+      > tr {
+        >td, >th {
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+
+  &.table-rubric {
+    margin-bottom: 0;
+
+    &.table-margin {
+      margin-bottom: 10px;
+    }
+
+    &.table-pointer {
+      > thead, > tbody {
+        > tr > td {
+          cursor: pointer;
+
+          &:first-child, &.info {
+            cursor: default;
+          }
+        }
+      }
+    }
+
+    > thead, > tbody {
+      > tr {
+        > td, > th {
+          cursor: default;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+
+          p:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+p.pdf-pages {
+  display:inline-block;
+  margin:0;
+
+  input {
+    width:35px;
+  }
+}
+
+.page-title {
+  margin-bottom: 0px;
+}
+.page-subtitle {
+  margin-top: 0px;
+}
+
+.review-editor {
+  .review-properties {
+    .review-property:first-child {
+      p.question {
+        padding-top: 10px;
+      }
+    }
+  }
+
+  p.rubric-grade {
+    font-size:0.8em;
+  }
+}
+
+p.login-desc {
+  padding-top:8px;
+}
+
+img {
+  &.left {
+    float:left;
+    margin-right: 10px;
+  }
+
+  &.home {
+    max-height: 110px;
+  }
+
+  &.login {
+    &.groufty {
+      @media (max-width: @screen-xs-max) {
+        max-height: 80px;
+      }
+
+      @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+        max-height: 80px;
+      }
+
+      @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+        max-height: 83px;
+      }
+
+      @media (min-width: @screen-lg-min) {
+        max-height: 105px;
+      }
+    }
+
+    &.authority {
+      @media (max-width: @screen-xs-max) {
+        margin: 23px 0;
+        max-height: 35px;
+      }
+
+      @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+        margin: 23px 0;
+        max-height: 35px;
+      }
+
+      @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+        margin: 24px 0;
+        max-height: 36px;
+      }
+
+      @media (min-width: @screen-lg-min) {
+        margin: 30px 0;
+        max-height: 46px;
+      }
+    }
+  }
+}
+
+#loader {
+  margin:0 auto;
+  text-align: center;
+
+
+  .load-img {
+    height:100px;
+    -webkit-animation:spin 2s linear infinite;
+    -moz-animation:spin 2s linear infinite;
+    animation:spin 2s linear infinite;
+  }
+}
+
+@-moz-keyframes spin {
+  from { -moz-transform: rotate(0deg); }
+  to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  from {transform:rotate(0deg);}
+  to {transform:rotate(360deg);}
+}

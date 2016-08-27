@@ -1,0 +1,57 @@
+<div *ngIf="property" class="panel panel-default">
+    <div class="panel-heading panel-heading-tools">
+        <div class="pull-right property-tools">
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-default" (click)="setTextType($event)"
+                        [ngClass]="{active: property.type == 'TEXT'}" [disabled]="disableStructure">
+                    <span class="fa fa-comment-o"></span><span class="sr-only">Text</span>
+                </button>
+                <button type="button" class="btn btn-default" (click)="setGradeType($event)"
+                        [ngClass]="{active: property.type == 'GRADE'}" [disabled]="disableStructure">
+                    <span class="fa fa-line-chart"></span><span class="sr-only">Grade</span>
+                </button>
+                <button type="button" class="btn btn-default" (click)="setRubricType($event)"
+                        [ngClass]="{active: property.type == 'RUBRIC'}" [disabled]="disableStructure">
+                    <span class="fa fa-table"></span><span class="sr-only">Rubric</span>
+                </button>
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+                <button (click)="doMoveUp($event)" type="button" class="btn btn-default"
+                        [disabled]="disableUp || disableStructure">
+                    <span class="fa fa-arrow-up"></span><span class="sr-only">Up</span>
+                </button>
+                <button (click)="doMoveDown($event)" type="button" class="btn btn-default"
+                        [disabled]="disableDown || disableStructure">
+                    <span class="fa fa-arrow-down"></span><span class="sr-only">Down</span>
+                </button>
+                <button (click)="doRemove($event)" type="button" class="btn btn-danger"
+                        [disabled]="disableStructure">
+                    <span class="fa fa-trash"></span><span class="sr-only">Remove</span>
+                </button>
+            </div>
+        </div>
+        <div class="panel-title"><markdown [md]="'**' + (index + 1) + '.** ' + property.description"></markdown></div>
+    </div>
+    <form class="form-horizontal" [ngFormModel]="form">
+        <div class="panel-body">
+            <div class="form-group"
+                 [ngClass]="{'has-error': (showHints || description.dirty) && !description.valid && !description.pending}">
+                <label for="description" class="control-label col-xs-12 col-sm-2 col-md-2 col-lg-2">Description</label>
+                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
+                    <textarea class="form-control" id="description" placeholder="The question/description shown to the student."
+                              ngControl="description" [(ngModel)]="property.description"></textarea>
+                </div>
+            </div>
+            <div class="form-group" *ngIf="property.type != 'TEXT'"
+                 [ngClass]="{'has-error': (showHints || weight.dirty) && !weight.valid && !weight.pending}">
+                <label for="weight" class="control-label col-xs-12 col-sm-2 col-md-2 col-lg-2">Weight</label>
+                <div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
+                    <input type="number" class="form-control" id="weight" placeholder="Question weight"
+                           ngControl="weight" [(ngModel)]="property.weight" />
+                </div>
+            </div>
+            <rubric-editor *ngIf="property.type == 'RUBRIC'" [rubric]="property"
+                           [showHints]="showHints" [disableStructure]="disableStructure"></rubric-editor>
+        </div>
+    </form>
+</div>

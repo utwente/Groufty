@@ -1,0 +1,18 @@
+<div class="row">
+    <form class="col-xs-12 form-horizontal" *ngIf="editable" [ngFormModel]="form">
+        <div class="form-group"
+             [ngClass]="{
+             'has-error': (grade.dirty || hint) && !grade.valid && !grade.pending,
+             'has-success': (grade.dirty || hint) && grade.valid && !grade.pending }">
+            <label class="control-label col-sm-3 col-md-2">Grade:</label>
+            <div class="col-sm-9 col-md-10">
+                <input type="number" class="form-control" min="1" max="10" step="0.1"
+                       [(ngModel)]="current" ngControl="grade" />
+                <p><small><i>Please rate this question with a grade between 1 and 10.</i></small></p>
+            </div>
+        </div>
+    </form>
+    <div class="col-xs-12" *ngIf="!editable">
+        <p>Grade: {{current}}</p>
+    </div>
+</div>

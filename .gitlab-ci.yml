@@ -1,0 +1,90 @@
+stages:
+  - test
+  - build
+  - deploy
+
+cache:
+  key: "$CI_BUILD_STAGE"
+  paths:
+    - src/main/web/node_modules/
+
+.test:template: &test-template
+  script:
+    - echo Testing branch $(git describe --all)...
+    - mvn test
+  stage: test
+
+test:jdk8:
+  <<: *test-template
+  tags:
+    - groufty
+    - jdk8
+    - maven3
+
+test:openjdk8:
+  <<: *test-template
+  tags:
+    - groufty
+    - openjdk8
+    - maven3
+
+.build:template: &build-template
+  script:
+    - echo Building branch $(git describe --all)...
+    - mvn package -P prod -DskipTests
+  stage: build
+  when: on_success
+  artifacts:
+    paths:
+      - target/*.jar
+
+build:jdk8:
+  <<: *build-template
+  tags:
+    - groufty
+    - jdk8
+    - maven3
+  only:
+    - dev
+    - master
+    - /^release_.*$/
+
+build:openjdk8:
+  <<: *build-template
+  tags:
+    - groufty
+    - openjdk8
+    - maven3
+  only:
+    - /^release_.*$/
+
+.deploy:template: &deploy-template
+  when: on_success
+  tags:
+    - groufty
+    - deploy
+  dependencies:
+    - build:jdk8
+  stage: deploy
+
+deploy:swap:
+  <<: *deploy-template
+  script: |
+    echo Swapping build for $CI_BUILD_REF_NAME...
+    cp target/*.jar groufty_$CI_BUILD_REF_NAME.jar
+    sftp groufty@groufty.ewi.utwente.nl:/var/groufty/releases <<< $(echo "put groufty_$CI_BUILD_REF_NAME.jar")
+    ssh groufty@groufty.ewi.utwente.nl sudo groufty-swap $CI_BUILD_REF_NAME /var/groufty/releases/groufty_$CI_BUILD_REF_NAME.jar --jar
+    rm -f /var/groufty/releases/groufty_$CI_BUILD_REF_NAME.jar
+  only:
+    - dev
+    - master
+
+deploy:upload:
+  <<: *deploy-template
+  script: |
+    echo Releasing build for $CI_BUILD_REF_NAME...
+    cp target/*.jar groufty_$CI_BUILD_REF_NAME.jar
+    sftp groufty@groufty.ewi.utwente.nl:/var/groufty/releases <<< $(echo "put groufty_$CI_BUILD_REF_NAME.jar")
+    ssh groufty@groufty.ewi.utwente.nl sudo groufty-release-cleanup
+  only:
+    - /^release_.*$/

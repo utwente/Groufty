@@ -1,0 +1,45 @@
+<div class="review-editor" *ngIf="_template">
+
+    <div class="pull-right" *ngIf="editable">
+        <div class="btn-group" role="group" aria-label="Save">
+            <button (click)="save()" type="button" class="btn btn-default" title="Save review">
+                <span class="fa fa-save"></span><span class="sr-only">Save</span>
+            </button>
+        </div>
+        <div *ngIf="_review.submitted" class="btn-group" role="group" aria-label="Submit">
+            <button (click)="unsubmit()" type="button" class="btn btn-danger" title="Unsubmit the review">
+                Unsubmit
+            </button>
+        </div>
+        <div *ngIf="!_review.submitted" class="btn-group" role="group" aria-label="Submit">
+            <button (click)="submit()" type="button" class="btn btn-success" title="Submit the review">
+                Submit
+            </button>
+        </div>
+    </div>
+
+    <h4 *ngIf="grades">Grade
+        <small>
+            <span *ngIf="_showGrade">{{grade()}}</span>
+        </small>
+    </h4>
+
+    <div *ngIf="messages.length > 0" class="clearfix"></div>
+    <flag-form *ngIf="!editable && flaggable && !flagged" [flagged]="flagged" [reason]="''" [review-id]="_review.reviewId"></flag-form>
+
+    <flag-form *ngIf="!editable && flaggable && flagged" [flagged]="flagged" [reason]="_review.flag.message" [review-id]="_review.reviewId"></flag-form>
+
+
+    <div class="review-properties">
+        <messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+        <div class="review-property" *ngFor="let property of _template.reviewTemplateProperties; let i = index">
+            <p class="question"><markdown [md]="'**' + (i+1) + '.** ' + property.description"></markdown></p>
+            <review-grade *ngIf="property.type == 'GRADE'" [editable]="editable" [id]="i" [grade]="grades"
+                          [property]="property" [hint]="_hints" [value]="_review.reviewProperties[i]"></review-grade>
+            <review-text *ngIf="property.type == 'TEXT'" [editable]="editable" [id]="i" [grade]="grades"
+                         [property]="property" [hint]="_hints" [value]="_review.reviewProperties[i]"></review-text>
+            <review-rubric *ngIf="property.type == 'RUBRIC'" [editable]="editable" [id]="i" [grade]="grades"
+                           [property]="property" [hint]="_hints" [value]="_review.reviewProperties[i]"></review-rubric>
+        </div>
+    </div>
+</div>

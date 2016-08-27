@@ -1,0 +1,5 @@
+#!/bin/bash
+
+service nginx stop
+/opt/letsencrypt/letsencrypt-auto certonly -d groufty.ewi.utwente.nl -d groufty.ga
+service nginx start

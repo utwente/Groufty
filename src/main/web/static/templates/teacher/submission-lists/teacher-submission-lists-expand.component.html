@@ -1,0 +1,33 @@
+<table class="table table-condensed row-hover">
+	<thead>
+	<tr>
+		<th class="col-md-2">Task</th>
+		<th class="col-md-2">Last edited</th>
+		<th class="col-md-2">Status</th>
+		<th class="col-md-2">Reviews</th>
+		<th class="col-md-3">Review grade low/high/diff</th>
+		<th class="col-md-2">Grade</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr *ngFor="let submission of page.content; let i = index" (click)="browseToSubmissionDetail(submission.taskId)" [ngClass]="{'warning': submission.hasFlaggedReviews}">
+		<td>{{ submission.taskName }}</td>
+		<td>{{ submission.lastEdited | moment:"YYYY-MM-DD HH:mm" }}</td>
+		<td>
+			<span *ngIf="submission.submitted">Submitted</span>
+			<span *ngIf="!submission.submitted">Open</span>
+		</td>
+		<td>{{ submission.submittedReviewCount }} / {{ submission.totalReviewCount }}
+			<span *ngIf="submission.hasFlaggedReviews">
+				<span class="fa fa-flag"></span>
+			</span>
+		</td>
+		<td>{{ submission.lowestReviewGrade }}/{{ submission.highestReviewGrade }}/{{ submission.largestDiffReviewGrade }}</td>
+		<td>{{ submission.grade }}</td>
+
+	</tr>
+	</tbody>
+	<a *ngIf="page.totalElements > page.size" (click)="showMoreSubmissions()">
+		Show {{ page.totalElements-page.size }} more item<span *ngIf="(page.totalElements-page.size) > 1">s</span>
+	</a>
+</table>

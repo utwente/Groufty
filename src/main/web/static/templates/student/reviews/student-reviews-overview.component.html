@@ -1,0 +1,53 @@
+<div class="container">
+    <h1>My Review Tasks</h1>
+    <p>This page contains submissions of others that you have to review grouped by task. Task are sorted earliest review deadline first.</p>
+    <messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+    <div class="row">
+        <table class="table row-hover">
+            <thead>
+            <tr>
+                <th class="col-md-1"></th>
+                <th class="col-md-2">Task</th>
+                <th class="col-md-2">Task List</th>
+                <th class="col-md-2">Submitted / Total</th>
+                <th class="col-md-2">Deadline</th>
+            </tr>
+            </thead>
+            <tbody *ngFor="let reviewOverview of page.content; let i = index">
+            <tr (click)="taskListExpand(i)">
+                <td>
+                     <span>
+                        <i *ngIf="expanded[i]" class="fa fa-caret-down"></i>
+                        <i *ngIf="!expanded[i]" class="fa fa-caret-right"></i>
+                     </span>
+                </td>
+                <td>{{ reviewOverview.taskName }}</td>
+                <td>{{ reviewOverview.taskListName }}</td>
+                <td>{{ reviewOverview.submittedReviewCount }} / {{ reviewOverview.totalReviewCount }}</td>
+                <td>{{ reviewOverview.reviewDeadline | moment:"YYYY-MM-DD HH:mm" }}</td>
+            </tr>
+            <tr *ngIf="expanded[i]" class="disable-hover">
+                <td colspan="7">
+                    <review-expand [reviewTask-id]="reviewOverview.taskId" [show-grades]="reviewOverview.showGradesToReviewers"></review-expand>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <nav>
+            <ul class="pagination pull-right">
+                <li *ngIf="!page.first">
+                    <a (click)="prevPage()" aria-label="Previous">
+                        <i class="fa fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li *ngFor="let i of getNumber(page.totalPages); let i = index"><a (click)="navigate(i)">{{ i+1 }}</a></li>
+                <li *ngIf="!page.last">
+                    <a (click)="nextPage()" aria-label="Next">
+                        <i class="fa fa-angle-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="container">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                aria-controls="navbar" (click)="toggleMenu()">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" [routerLink]="['Start']">Groufty</a>
+    </div>
+    <div class="navbar-collapse collapse" [ngClass]="{ in : expanded }">
+        <ul class="nav navbar-nav">
+            <li *ngIf="session != null && hasRole('ROLE_PARTICIPANT')" [ngClass]="{ active: isPage('tasks') }">
+                <a (click)="closeMenu()" [routerLink]="['StudentTasks']">My Tasks</a>
+            </li>
+            <li *ngIf="session != null && (hasRole('ROLE_PARTICIPANT') || hasRole('ROLE_EDITOR'))" [ngClass]="{ active: isPage('reviews') }">
+                <a (click)="closeMenu()" [routerLink]="['StudentReviews']">My Review Tasks</a>
+            </li>
+            <li *ngIf="session != null && hasRole('ROLE_PARTICIPANT')" [ngClass]="{ active: isPage('feedback') }">
+                <a (click)="closeMenu()" [routerLink]="['StudentFeedback']">My Received Reviews</a>
+            </li>
+            <li *ngIf="session != null && hasRole('ROLE_EDITOR')" [ngClass]="{ active: isPage('batch') }">
+                <a (click)="closeMenu()" [routerLink]="['TeacherBatch']">Batch import</a>
+            </li>
+            <li *ngIf="session != null && hasRole('ROLE_EDITOR')" [ngClass]="{ active: isPage('task-lists') }">
+                <a (click)="closeMenu()" [routerLink]="['TeacherTaskLists']">Task Lists</a>
+            </li>
+            <li *ngIf="session != null && hasRole('ROLE_EDITOR')" [ngClass]="{ active: isPage('templates') }">
+                <a (click)="closeMenu()" [routerLink]="['TeacherReviewTemplate']">Review Templates</a>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li *ngIf="session == null" [ngClass]="{ active: isPage('login') }">
+                <a (click)="closeMenu()" [routerLink]="['Login']"><span class="fa fa-sign-in"></span> Login</a>
+            </li>
+            <li *ngIf="session != null">
+                <a (click)="logout()"><span class="fa fa-user"></span> {{ session.fullName }}</a>
+            </li>
+        </ul>
+    </div>
+</div>

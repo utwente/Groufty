@@ -1,0 +1,58 @@
+<div class="container">
+    <h1>Review Templates</h1>
+    <div class="btn-group pull-right" role="group" aria-label="Tools">
+        <button (click)="createTemplate()" type="button" class="btn btn-default">
+            <span class="fa fa-plus"></span> New Template
+        </button>
+    </div>
+    <p>This page contains all existing review templates and has functionality to add new ones.</p>
+    <messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+    <div class="row">
+        <table class="table row-hover cell-middle">
+            <thead>
+            <tr>
+                <th class="col-md-4">Name</th>
+                <th class="col-md-2">Questions</th>
+                <th class="col-md-2">Tasks</th>
+                <th class="col-md-2">Reviews</th>
+                <th class="col-md-2"></th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let reviewTemplateOverview of page.content; let i = index" (click)="editReviewTemplate($event, i)">
+                    <td>{{ reviewTemplateOverview.name }}</td>
+                    <td>{{ reviewTemplateOverview.propertyCount }}</td>
+                    <td>{{ reviewTemplateOverview.taskCount }}</td>
+                    <td>{{ reviewTemplateOverview.reviewCount }}</td>
+                    <td style="text-align:right;">
+                        <a (click)="editReviewTemplate($event, i)" class="btn btn-default btn-sm">
+                            <span class="fa fa-pencil"></span><span class="sr-only">Edit</span>
+                        </a>
+                        <a (click)="duplicateReviewTemplate($event, i)" class="btn btn-default btn-sm">
+                            <span class="fa fa-files-o"></span><span class="sr-only">Duplicate</span>
+                        </a>
+                        <a (click)="removeReviewTemplate($event, i)" class="btn btn-danger btn-sm"
+                           [ngClass]="{ disabled: reviewTemplateOverview.taskCount > 0 }">
+                            <span class="fa fa-trash"></span><span class="sr-only">Remove</span>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <nav>
+            <ul class="pagination pull-right">
+                <li *ngIf="!page.first">
+                    <a (click)="prevPage()" aria-label="Previous">
+                        <i class="fa fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li *ngFor="let i of getNumber(page.totalPages); let i = index"><a (click)="navigate(i)">{{ i+1 }}</a></li>
+                <li *ngIf="!page.last">
+                    <a (click)="nextPage()" aria-label="Next">
+                        <i class="fa fa-angle-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

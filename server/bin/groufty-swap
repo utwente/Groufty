@@ -1,0 +1,172 @@
+#!/bin/bash
+
+GROUFTY_INSTANCE_DIR=/var/groufty/instance
+GROUFTY_CACHE_DIR=/var/groufty/cache
+GROUFTY_BACKUP_SCRIPT=/var/groufty/bin/groufty_backup
+GROUFTY_BACKUP_USER=groufty-backup
+GROUFTY_INSTANCE_USER=groufty
+GROUFTY_INSTANCE_GROUP=groufty
+
+function show_help {
+	printf "Usage: %s INSTANCE SOURCE [OPTIONS]\n" $0
+	printf "       %s INSTANCE -r [OPTIONS]\n" $0
+	local format="      %-16s %s\n"
+	printf "\nInput fields:\n"
+	printf "$format" "INSTANCE" "The target instance to swap the binary of."
+	printf "$format" "SOURCE" "The source to get the binary from to swap with."
+	local format="  %-3s %-16s %s\n"
+	printf "\nOptions:\n"
+	printf "$format" "-f" "--force" "Force swapping instances."
+	printf "$format" "-j" "--jar" "The binary source is not a instance but a JAR file."
+	printf "$format" "-C" "--skip-cache" "Do not clear the nginx cache for the target instance (overwrite default)."
+	printf "$format" "-c" "--clear-cache" "Clear the nginx cache for the target instance (overwrite default)."
+	printf "$format" "-B" "--skip-backup" "Do not perform a backup before swapping instances (overwrite default)."
+	printf "$format" "-b" "--backup" "Perform a backup before swapping the target instance (overwrite default)."
+	printf "$format" "-r" "--rollback" "Rollback the last hotswap for this instance."
+	printf "$format" "-h" "--help" "Show this help text."
+}
+
+function print_error {
+	echo -e "\e[31m$1\e[39m"
+}
+
+function create_backup {
+	echo "Creating backup for instance $GROUFTY_INSTANCE..."
+	sudo -u $GROUFTY_BACKUP_USER -H $GROUFTY_BACKUP_SCRIPT $1
+}
+
+function clear_cache {
+	if [[ -d "$GROUFTY_CACHE_DIR/$GROUFTY_INSTANCE" ]]; then
+		echo "Clearing cache for instance $GROUFTY_INSTANCE..."
+		find "$GROUFTY_CACHE_DIR/$GROUFTY_INSTANCE" -type f -exec rm {} \;
+	fi
+}
+
+GROUFTY_INSTANCE=
+GROUFTY_SOURCE=
+GROUFTY_ROLLBACK=0
+GROUFTY_FORCE=0
+GROUFTY_JAR=0
+GROUFTY_CACHE=-1
+GROUFTY_BACKUP=-1
+GROUFTY_HELP=0
+
+while (( "$#" )); do
+	if [[ ! $1 == "-"* ]]; then
+		if [[ -z "$GROUFTY_INSTANCE" ]]; then
+			GROUFTY_INSTANCE=$1
+		elif [[ -z "$GROUFTY_SOURCE" ]]; then
+			GROUFTY_SOURCE=$1
+		else
+			show_help
+			exit 1
+		fi
+	else
+		case $1 in
+			-f|--force)
+				GROUFTY_FORCE=1
+			;;
+			-j|--jar)
+				GROUFTY_JAR=1
+			;;
+			-C|--skip-cache)
+				GROUFTY_CACHE=0
+			;;
+			-c|--clear-cache)
+				GROUFTY_CACHE=1
+			;;
+			-B|--skip-backup)
+				GROUFTY_BACKUP=0
+			;;
+			-b|--backup)
+				GROUFTY_BACKUP=1
+			;;
+			-r|--rollback)
+				GROUFTY_ROLLBACK=1
+			;;
+			-h|--help)
+				GROUFTY_HELP=1
+			;;
+			*)
+				show_help
+				exit 2
+			;;
+		esac
+	fi
+	shift;
+done;
+
+if [[ "$GROUFTY_HELP" == "1" ]]; then
+	show_help
+	exit 0
+elif [[ $EUID -ne 0 ]]; then
+	print_error "This script should be run as the root user!"
+elif [[ -z "$GROUFTY_INSTANCE" ]]; then
+	print_error "No target instance given"
+	show_help
+elif [[ "$GROUFTY_ROLLBACK" == "0" ]] && [[ -z "$GROUFTY_SOURCE" ]]; then
+	print_error "No source given"
+	show_help
+elif [[ ! -d "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE" ]]; then
+	print_error "The instance $GROUFTY_INSTANCE does not exist."
+elif [[ ! -f "/etc/init.d/groufty-$GROUFTY_INSTANCE" ]]; then
+	print_error "The instance $GROUFTY_INSTANCE does not support hotswapping. Service not found!"
+elif [[ "$GROUFTY_ROLLBACK" == "1" ]] && [[ ! -f "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup" ]]; then
+	print_error "Cannot rollback instance $GROUFTY_INSTANCE to last version. No backup found."
+elif [[ "$GROUFTY_JAR" == "1" ]] && [[ ! -f "$GROUFTY_SOURCE" ]]; then
+	print_error "The file $GROUFTY_SOURCE does not exist."
+elif [[ "$GROUFTY_JAR" == "0" ]] && [[ ! -d "$GROUFTY_INSTANCE_DIR/$GROUFTY_SOURCE" ]]; then
+	print_error "The instance $GROUFTY_SOURCE does not exist."
+else
+	GROUFTY_INSTANCE_PROTECTED=0
+	GROUFTY_INSTANCE_BACKUP=1
+	GROUFTY_INSTANCE_CACHE=0
+	GROUFTY_INSTANCE_DATABASE=
+	if [[ -f "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/.swap-options" ]]; then
+		source "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/.swap-options"
+	fi
+	if [[ "$GROUFTY_INSTANCE_PROTECTED" == "1" ]] && [[ "$GROUFTY_FORCE" == "0" ]]; then
+		print_error "The instance $GROUFTY_INSTANCE is protected against hotswapping."
+		print_error "You can use -f to force hotswapping the instance."
+		exit 4;
+	fi
+	echo "Stopping instance $GROUFTY_INSTANCE..."
+	service groufty-$GROUFTY_INSTANCE stop > /dev/null
+	if [[ "$GROUFTY_INSTANCE_BACKUP" == "1" ]] && [[ "$GROUFTY_BACKUP" == "-1" ]]; then
+		run_backup $GROUFTY_INSTANCE_DATABASE
+	elif [[ "$GROUFTY_BACKUP" == "1" ]]; then
+		run_backup $GROUFTY_INSTANCE_DATABASE
+	fi
+	if [[ "$GROUFTY_ROLLBACK" == "1" ]]; then
+		echo "Rolling back binary for instance $GROUFTY_INSTANCE..."
+		if [[ -f "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar" ]]; then
+			rm -rf "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar"
+		fi
+		mv "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup" "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar"
+	else
+		echo "Creating backup of current binary for instance $GROUFTY_INSTANCE..."
+		if [[ -f "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup" ]]; then
+			rm -rf "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup"
+		fi
+		mv "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar" "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup"
+		chown $GROUFTY_INSTANCE_USER:$GROUFTY_INSTANCE_GROUP "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar.backup"
+		if [[ "$GROUFTY_JAR" == "0" ]]; then
+			echo "Copying binary of instance $GROUFTY_SOURCE to instance $GROUFTY_INSTANCE..."
+			cp "$GROUFTY_INSTANCE_DIR/$GROUFTY_SOURCE/groufty_$GROUFTY_SOURCE"".jar" "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar"
+		else
+			echo "Copying JAR file to instance $GROUFTY_INSTANCE..."
+			cp "$GROUFTY_SOURCE" "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar"
+		fi
+	fi
+	chown $GROUFTY_INSTANCE_USER:$GROUFTY_INSTANCE_GROUP "$GROUFTY_INSTANCE_DIR/$GROUFTY_INSTANCE/groufty_$GROUFTY_INSTANCE"".jar"
+	if [[ "$GROUFTY_INSTANCE_CACHE" == "1" ]] && [[ "$GROUFTY_CACHE" == "-1" ]]; then
+		clear_cache
+	elif [[ "$GROUFTY_CACHE" == "1" ]]; then
+		clear_cache
+	fi
+	echo "Starting instance $GROUFTY_INSTANCE..."
+	service groufty-$GROUFTY_INSTANCE start
+	exit 0
+fi
+
+exit 1;

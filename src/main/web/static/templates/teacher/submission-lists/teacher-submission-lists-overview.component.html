@@ -1,0 +1,149 @@
+<div class="container">
+	<h1>Submission lists - {{ taskListDetail.taskListName }}</h1>
+
+	<div class="pull-right">
+		<div class="btn-group" role="group" aria-label="Edit">
+			<button (click)="browseToEditTaskList()" type="button" class="btn btn-default" title="Add task list">
+				<span class="fa fa-pencil"></span> Edit task list
+			</button>
+		</div>
+		<div class="btn-group" role="group" aria-label="Export">
+			<button (click)="exportTaskList()" type="button" class="btn btn-default" title="Export task list">
+				<span class="fa fa-download"></span> Export
+			</button>
+		</div>
+	</div>
+
+	<p>On this page you will find all submission lists for the <em>{{ taskListDetail.taskListName }}</em> task list.</p>
+
+	<messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+
+	<div class="row">
+		<h4>Task list details</h4>
+		<dl class="col-md-4 dl-horizontal">
+			<dt>Author</dt>
+			<dd>{{ taskListDetail.authorName }}</dd>
+			<dt>Audience</dt>
+			<dd>
+				<span *ngIf="taskListDetail.submissionAudience == 'GROUP'" class="fa fa-users"></span>
+				<span *ngIf="taskListDetail.submissionAudience == 'INDIVIDUAL'" class="fa fa-user"></span>
+				<a click="browseToGrouping(taskOverview.groupingId)"> {{ taskListDetail.groupingName }}</a>
+			</dd>
+			<dt>Total submitters</dt>
+			<dd>
+				<span *ngIf="taskListDetail.anonymousSubmitters" class="fa fa-user-secret"></span>
+				{{ taskListDetail.submitterCount }}</dd>
+			<dt></dt>
+			<dt>Total reviewers</dt>
+			<dd>
+				<span *ngIf="taskListDetail.anonymousReviewers" class="fa fa-user-secret"></span>
+				{{ taskListDetail.reviewerCount }}</dd>
+			<dt></dt>
+		</dl>
+
+		<dl class="col-md-4 dl-horizontal">
+			<dt></dt><dd></dd>
+			<dt>State</dt>
+			<dd>{{ taskListDetail.state | enumCleaner }}</dd>
+			<dt>Submitted</dt>
+			<dd>{{ taskListDetail.submittedSubmissionsCount }}</dd>
+			<dt>Reviewed</dt>
+			<dd>{{ taskListDetail.submittedReviewsCount }}</dd>
+		</dl>
+
+		<dl class="col-md-4 dl-horizontal">
+			<dt>Start date</dt>
+			<dd>{{ taskListDetail.startDate | moment:"YYYY-MM-DD HH:mm" }}</dd>
+			<dt>Submission deadline</dt>
+			<dd>{{ taskListDetail.submissionDeadline | moment:"YYYY-MM-DD HH:mm" }}</dd>
+			<dt>Review deadline</dt>
+			<dd>{{ taskListDetail.reviewDeadline | moment:"YYYY-MM-DD HH:mm" }}</dd>
+		</dl>
+	</div>
+
+	<div class="row">
+		<div class="pull-right">
+			<div class="btn-group" role="group" aria-label="Reset">
+				<button class="btn btn-default" (click)="onResetFilters()">Reset filters</button>
+			</div>
+		</div>
+
+		<h4>Filters</h4>
+		<form class="form-inline" (ngSubmit)="onSubmit()" #filterForm="ngForm">
+			<div class="form-group">
+				<label for="diff">Review grade difference</label>
+				<input id="diff" type="number" min="0" max="10" step="any" class="form-control" required
+				       [(ngModel)]="difference"
+				       ngControl="diff"  #name="ngForm" >
+			</div>
+			<button type="submit" class="btn btn-primary" [disabled]="!filterForm.form.valid">Apply filters</button>
+		</form>
+	</div>
+
+	<div class="row">
+		<table class="table row-hover">
+			<thead>
+			<tr>
+				<th class="col-md-1"></th>
+				<th class="col-md-2">Author</th>
+				<th class="col-md-2">Submissions</th>
+				<th class="col-md-2">Reviews</th>
+				<th class="col-md-1">Status</th>
+				<th class="col-md-1">Largest diff</th>
+				<th class="col-md-1">Grade</th>
+			</tr>
+			</thead>
+			<tbody *ngFor="let taskOverview of page.content; let i = index">
+			<tr (click)="taskListExpand(i)" [ngClass]="{'warning': taskOverview.hasFlaggedReviews}">
+				<td>
+                    <span>
+                        <i *ngIf="expanded[i]" class="fa fa-caret-down"></i>
+                        <i *ngIf="!expanded[i]" class="fa fa-caret-right"></i>
+                    </span>
+				</td>
+				<td><span *ngIf="taskOverview.userId != null">{{ taskOverview.userId }} - </span>{{ taskOverview.authorName }}</td>
+				<td>{{ taskOverview.submissionCount }}</td>
+				<td>{{ taskOverview.submittedReviewCount }} / {{ taskOverview.totalReviewCount }}
+					<span *ngIf="taskOverview.hasFlaggedReviews">
+						<span class="fa fa-flag"></span>
+					</span>
+
+				</td>
+
+				<td>
+					<span *ngIf="taskOverview.finalized">
+						Finalized
+					</span>
+					<span *ngIf="!taskOverview.finalized">
+						Open
+					</span>
+				</td>
+
+				<td>{{ taskOverview.largestDiffReviewGrade }}</td>
+				<td>{{ taskOverview.overrideFinalGrade }}</td>
+
+			</tr>
+			<tr *ngIf="expanded[i]" class="disable-hover"  >
+				<td colspan="12">
+					<submission-list-expand [task-list-id]="taskListDetail.taskListId" [author-id]="taskOverview.authorId"></submission-list-expand>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+		<nav>
+			<ul class="pagination pull-right">
+				<li *ngIf="!page.first">
+					<a (click)="prevPage()" aria-label="Previous">
+						<i class="fa fa-angle-double-left"></i>
+					</a>
+				</li>
+				<li *ngFor="let i of getNumber(page.totalPages); let i = index"><a (click)="navigate(i)">{{ i+1 }}</a></li>
+				<li *ngIf="!page.last">
+					<a (click)="nextPage()" aria-label="Next">
+						<i class="fa fa-angle-double-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>

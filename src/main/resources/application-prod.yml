@@ -1,0 +1,17 @@
+# Production configuration
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    data: 'classpath:schema-additions.sql'
+
+server:
+    compression:
+        enabled: true
+        mime-types: text/html, text/plain,text/css, application/javascript, application/json
+
+groufty:
+  authentication:
+    enable-ldap-auth: true

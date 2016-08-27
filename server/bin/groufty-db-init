@@ -1,0 +1,32 @@
+#!/bin/bash
+# Simple script to launch an instance with all the properties that make it populate the database
+# Created because I keep forgetting them
+# Author: Lukas Miedema
+
+PROPERTIES="--spring.datasource.initialize=true --spring.jpa.hibernate.ddl-auto=create"
+
+if [ "$#" -ne 1 ]
+then
+	echo "Example usage: $0 groufty-dev"
+	exit 1
+fi
+
+jarfile="/etc/init.d/$1"
+
+if [ ! -f $jarfile ]
+then
+	echo "No such service: $1"
+	exit 1
+fi
+
+# Follow the symlinks
+# We need this because the properties files live in the same folder
+while [[ -L "$jarfile" ]]; do
+  jarfile=$(readlink "$jarfile")
+done
+
+# CD into it
+cd $(dirname $jarfile)
+
+echo Initializing $1
+java -jar $jarfile $PROPERTIES

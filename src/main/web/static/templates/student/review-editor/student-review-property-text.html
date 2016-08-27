@@ -1,0 +1,15 @@
+<div class="row">
+    <form class="col-xs-12 form-horizontal" *ngIf="editable" [ngFormModel]="form">
+        <div class="form-group">
+            <div class="col-sm-12" [ngClass]="{
+            'has-error': (text.dirty || hint) && !text.valid && !text.pending,
+            'has-success': (text.dirty || hint) && text.valid && !text.pending }">
+                <textarea ngControl="text" class="form-control" [(ngModel)]="current"></textarea>
+                <p><small><i>Answer the question in the textbox above.</i></small></p>
+            </div>
+        </div>
+    </form>
+    <div class="col-xs-12" *ngIf="!editable">
+        <p><markdown [md]="current"></markdown></p>
+    </div>
+</div>

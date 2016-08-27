@@ -1,0 +1,35 @@
+<messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+
+<div class="pull-right">
+	<div class="btn-group" role="group" aria-label="Flag">
+		<button *ngIf="flagged" type="button" class="btn btn-danger"
+		        title="Report this review to the teacher!">
+			<span class="fa fa-flag"></span><span class="sr-only">Flag review!</span>
+		</button>
+
+
+
+		<button *ngIf="!flagged" (click)="flagReview()" type="button" class="btn btn-default"
+		        title="Report this review to the teacher!">
+			<span class="fa fa-flag"></span><span class="sr-only">Flag review!</span>
+		</button>
+	</div>
+</div>
+
+<br><br>
+<div class="well" *ngIf="flagged">
+	{{ reason }}
+</div>
+
+<form *ngIf="active" (ngSubmit)="onSubmit()" #flagForm="ngForm">
+	<div [hidden]="name.valid || name.pristine" class="alert alert-danger">
+		Reason is required
+	</div>
+	<div class="form-group">
+		<label for="reason">Reason</label>
+		<textarea id="reason" type="text" class="form-control" required
+		       [(ngModel)]="flag.message"
+		       ngControl="name"  #name="ngForm" ></textarea>
+	</div>
+	<button type="submit" class="btn btn-primary" [disabled]="!flagForm.form.valid">Submit</button>
+</form>

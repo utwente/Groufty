@@ -1,0 +1,4 @@
+<alert *ngFor="let message of messages; let i = index" [type]="message.type"
+       [dismissible]="message.closable" [dismissOnTimeout]="message.timeout" (close)="removeMessage(i)">
+    {{ message.content }}
+</alert>

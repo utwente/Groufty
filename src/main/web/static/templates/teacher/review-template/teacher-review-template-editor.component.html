@@ -1,0 +1,81 @@
+<div *ngIf="!errorState && template" class="pull-right" style="margin-top:27px;">
+    <div class="btn-group" role="group" aria-label="Tools">
+        <button (click)="saveTemplate($event)" type="button" class="btn btn-primary">
+            <span class="fa fa-floppy-o"></span> Save
+        </button>
+    </div>
+    <div class="btn-group hidden-xs" role="group" aria-label="Tools">
+        <button (click)="addProperty($event)" type="button" class="btn btn-success"
+                [disabled]="disableStructure">
+            <span class="fa fa-plus"></span> New Question
+        </button>
+    </div>
+</div>
+<h1>{{ template?.name }} <small>Review Template Editor</small></h1>
+<messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+<div class="row" *ngIf="!errorState && template">
+    <div class="col-sm-5 col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Details</h3>
+            </div>
+            <form class="form-horizontal" [ngFormModel]="form">
+                <div class="panel-body">
+                    <div class="form-group" [ngClass]="{'has-error': (showHints || name.dirty) && !name.valid && !name.pending}">
+                        <label for="name" class="control-label col-xs-12 col-sm-3 col-md-3 col-lg-2">Name</label>
+                        <div class="col-xs-12 col-sm-9 col-md-9 col-lg-10">
+                            <input type="text" class="form-control" id="name" placeholder="Name for the Review Template"
+                                   ngControl="name" [(ngModel)]="template.name">
+                        </div>
+                    </div>
+                    <div *ngIf="overview">
+                        <p>This review template is currently assigned to {{overview.taskCount}} tasks and there are
+                            {{overview.reviewCount}} reviews based on this template.
+                            <span *ngIf="overview.reviewCount > 0" style="color:red;">It is not possible to edit the
+                                structure or question types for a review template that already has reviews based on it.
+                                Please create a duplicate if you want to change the structure or the question types.</span>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading panel-heading-tools">
+                <div class="btn-group btn-group-sm pull-right" role="group">
+                    <button (click)="addProperty($event)" type="button" class="btn btn-success"
+                            [disabled]="disableStructure">
+                        <span class="fa fa-plus"></span><span class="sr-only">Add</span>
+                    </button>
+                </div>
+                <h3 class="panel-title">Question Overview</h3>
+            </div>
+            <ul class="list-group">
+                <li *ngFor="let property of template.reviewTemplateProperties; let i = index" class="list-group-item list-tool-item">
+                    <div class="btn-group btn-group-sm pull-right" role="group">
+                        <button (click)="moveUpProperty($event, i)" type="button" class="btn btn-default"
+                                [disabled]="i <= 0 || disableStructure">
+                            <span class="fa fa-arrow-up"></span><span class="sr-only">Up</span>
+                        </button>
+                        <button (click)="moveDownProperty($event, i)" type="button" class="btn btn-default"
+                                [disabled]="i >= getPropertiesLength() - 1 || disableStructure">
+                            <span class="fa fa-arrow-down"></span><span class="sr-only">Down</span>
+                        </button>
+                        <button (click)="removeProperty($event, i)" type="button" class="btn btn-danger"
+                                [disabled]="disableStructure">
+                            <span class="fa fa-trash"></span><span class="sr-only">Remove</span>
+                        </button>
+                    </div>
+                    <div class="item-title">
+                        <markdown [md]="'**' + (i + 1) + '.** ' + property.description"></markdown>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="col-sm-7 col-md-8">
+        <template-property *ngFor="let property of template.reviewTemplateProperties; let i = index" [property]="property"
+                           [index]="i" [disableUp]="i <= 0" [showHints]="showHints" [disableStructure]="disableStructure"
+                           [disableDown]="i >= getPropertiesLength() - 1" (moveUp)="moveUpProperty($event, i)"
+                           (moveDown)="moveDownProperty($event, i)" (remove)="removeProperty($event, i)"></template-property>
+    </div>
+</div>

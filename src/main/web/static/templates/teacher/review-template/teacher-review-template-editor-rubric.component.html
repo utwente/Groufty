@@ -1,0 +1,89 @@
+<table class="table table-bordered table-striped table-rubric cell-middle">
+    <thead>
+        <tr>
+            <th>
+                <button type="button" class="btn btn-default btn-sm" (click)="togglePreview($event)"
+                        [ngClass]="{active: preview}">
+                    <span class="fa fa-eye"></span> Preview Mode
+                </button>
+            </th>
+            <th *ngFor="let header of property.header; let i = index">
+                <div class="btn-group btn-group-sm pull-right" role="group">
+                    <button type="button" class="btn btn-default"
+                            (click)="moveColumnRight($event, i)"
+                            [disabled]="i >= getColumns() - 1 || disableStructure">
+                        <span class="fa fa-arrow-circle-right"></span><span class="sr-only">Move column to the right</span>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-default"
+                            (click)="moveColumnLeft($event, i)"
+                            [disabled]="i <= 0 || disableStructure">
+                        <span class="fa fa-arrow-circle-left"></span><span class="sr-only">Move column to the left</span>
+                    </button>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-danger" (click)="removeColumn($event, i)"
+                            [disabled]="disableStructure">
+                        <span class="fa fa-minus-square"></span><span class="sr-only">Delete column</span>
+                    </button>
+                </div>
+            </th>
+            <th>
+                <div style="text-align:center; width:100%;">
+                    <button type="button" class="btn btn-success btn-sm" (click)="addColumn($event)"
+                            [disabled]="disableStructure">
+                        <span class="fa fa-plus-square"></span><span class="sr-only">Add column</span>
+                    </button>
+                </div>
+            </th>
+        </tr>
+        <tr *ngIf="getColumns() > 0">
+            <th>&nbsp;</th>
+            <th *ngFor="let header of property.header; let i = index">
+                <input-rubric-cell [preview]="preview" [value]="property.header[i]" [showHints]="showHints"></input-rubric-cell>
+            </th>
+            <th>&nbsp;</th>
+        </tr>
+        <tr *ngIf="getColumns() > 0">
+            <th>&nbsp;</th>
+            <th *ngFor="let header of property.header; let i = index">
+                <input-rubric-cell [number]="true" [preview]="preview"
+                                   [value]="property.header[i]" [showHints]="showHints"></input-rubric-cell>
+            </th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let row of property.rows; let i = index">
+            <th>
+                <input-rubric-cell [preview]="preview" [value]="property.rows[i]" [showHints]="showHints"></input-rubric-cell>
+                <input-rubric-cell [number]="true" [preview]="preview"
+                                   [value]="property.rows[i]" [showHints]="showHints"></input-rubric-cell>
+            </th>
+            <td *ngFor="let option of row.options; let j = index">
+                <input-rubric-cell [preview]="preview" [value]="property.rows[i].options[j]"
+                                   [showHints]="showHints" [required]="false"></input-rubric-cell>
+            </td>
+            <td>
+                <button type="button" class="btn btn-default btn-sm"
+                        (click)="moveRowDown($event, i)" [disabled]="i >= getRows() - 1 || disableStructure">
+                    <span class="fa fa-arrow-circle-down"></span><span class="sr-only">Move row down</span>
+                </button>
+                <button type="button" class="btn btn-default btn-sm"
+                        (click)="moveRowUp($event, i)" [disabled]="i <= 0 || disableStructure">
+                    <span class="fa fa-arrow-circle-up"></span><span class="sr-only">Move row up</span>
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="deleteRow($event, i)"
+                        [disabled]="disableStructure">
+                    <span class="fa fa-minus-square"></span><span class="sr-only">Remove row</span>
+                </button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div *ngIf="getColumns() > 0" style="text-align:center; width:100%; margin-top:10px;">
+    <button type="button" class="btn btn-success btn-sm" (click)="addRow($event)" [disabled]="disableStructure">
+        <span class="fa fa-plus-square"></span> Add row
+    </button>
+</div>

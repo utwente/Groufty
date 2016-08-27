@@ -1,0 +1,35 @@
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table table-bordered table-striped table-rubric"
+               [ngClass]="{ 'table-pointer': editable, 'table-margin': !editable }">
+            <thead>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th *ngFor="let header of property.header; let i = index">
+                        <markdown [md]="header.label"></markdown>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of property.rows; let i = index" [ngClass]="{ 'danger': hint && current[i] == null } ">
+                    <th><markdown [md]="row.label"></markdown></th>
+                    <td *ngFor="let option of row.options; let j = index"
+                        [ngClass]="{'info': current[i] == j}"
+                        (click)="chooseValue(i,j)"><markdown [md]="option.label"></markdown></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="rubric-grade" *ngIf="grade && property && editable">
+            Currently you gave {{_getLocalPoints()}} out of {{_getMaxPoints()}} possible points for this rubric.
+            <span *ngIf="!isReady()" style="color:red;">
+                These are intermediate points. Please fill out the whole rubric to see the final score.
+            </span>
+        </p>
+        <p class="rubric-grade" *ngIf="grade && property && !editable">
+            Calculated rubric score: {{_getLocalPoints()}} out of {{_getMaxPoints()}} points.
+            <span *ngIf="!isReady()" style="color:red;">
+                Please note that the rubric is not filled out completely, the score calculation may be unreliable.
+            </span>
+        </p>
+    </div>
+</div>

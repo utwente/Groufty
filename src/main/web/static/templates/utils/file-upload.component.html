@@ -1,0 +1,86 @@
+<div class="well file-upload-well"
+     [ngClass]="{'file-hover-border': hasFileApiSupport && _files.length == 1, 'file-hover': _hasFileDragOver, 'text-center': _files.length == 1 || _state != 0}"
+     (fileOver)="onFileOver($event)"
+     (fileDrop)="onFileDrop($event)"
+     file-drop-zone>
+    <iframe name="file-upload"></iframe>
+    <div *ngIf="_state == 0 && _files.length == 1 && hasFileApiSupport">
+        <p>Drop your submission here</p>
+        <p><i>or</i></p>
+    </div>
+    <div *ngIf="_state == 0 && _files.length != 1">
+        <p>Please upload the following files:</p>
+    </div>
+    <div *ngIf="_state == 1">
+        <p *ngIf="_files[0].files.length == 1">You selected {{_files[0].files[0].name}}.
+            Are you sure you want to upload {{_files[0].files[0].name}} ({{_files[0].files[0].size}})?</p>
+        <p *ngIf="_files[0].files.length > 1">You selected {{_files[0].files.length}} files.
+            Are you sure you want to upload {{_files[0].files.length}} files?</p>
+        <button class="btn btn-danger" (click)="onFileCancel()">Cancel</button>
+        <button class="btn btn-success" (click)="onFileUpload()">Upload</button>
+    </div>
+    <div *ngIf="_state == 2">
+        <p>Uploading ({{_progress}}%)...</p>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar"
+                 aria-valuemin="0" aria-valuemax="100" [ngStyle]="{ 'width': _progress + '%' }"></div>
+        </div>
+    </div>
+    <div *ngIf="_state == 3">
+        <p class="large-icon success"><i class="fa fa-check" aria-hidden="true"></i></p>
+        <p>Upload successful!</p>
+    </div>
+    <div *ngIf="_state == 4">
+        <p class="large-icon danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></p>
+        <p>Oops! There was an error during upload!</p>
+        <p *ngIf="_errorMessage != ''">{{_errorMessage}}</p>
+        <button class="btn btn-danger" (click)="onFileCancel()">Cancel</button>
+        <button class="btn btn-primary" (click)="onFileUpload()">Try Again</button>
+    </div>
+    <div *ngIf="_state == 5">
+        <p class="large-icon danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></p>
+        <p>You did not select an accepted amount of files. Please try again.</p>
+        <button class="btn btn-primary" (click)="onBack()">Try again</button>
+    </div>
+    <div *ngIf="_state == 6">
+        <p class="large-icon danger"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></p>
+        <p>The selected file(s) cannot be uploaded. Check the file type and file size.</p>
+        <button class="btn btn-primary" (click)="onBack()">Try again</button>
+    </div>
+    <form method="POST" target="file-upload" class="form form-horizontal"
+          [ngClass]="{'hidden': _state != 0 }">
+        <fieldset *ngFor="let file of _files; let i = index" class="form-group">
+            <div class="col-sm-5 control-label" *ngIf="_files.length != 1">
+                <span *ngIf="file.description == ''">{{file.alias}}:</span>
+                <span *ngIf="file.description != ''">{{file.description}}:</span>
+                <span *ngIf="file.maxAmount == file.minAmount && file.maxAmount == 1">({{file.maxAmount}} file):</span>
+                <span *ngIf="file.maxAmount == file.minAmount && file.maxAmount != 1">({{file.maxAmount}} files):</span>
+                <span *ngIf="file.maxAmount != file.minAmount && file.minAmount > 0">({{file.minAmount}}-{{file.maxAmount}} files):</span>
+                <span *ngIf="file.maxAmount != file.minAmount && file.minAmount == 0 && file.maxAmount == 1">(max. {{file.maxAmount}} file):</span>
+                <span *ngIf="file.maxAmount != file.minAmount && file.minAmount == 0 && file.maxAmount != 1">(max. {{file.maxAmount}} files):</span>
+            </div>
+            <label class="btn btn-default"
+                   [ngClass]="{'btn-danger': !file.isValid() && file.feedback, 'col-sm-7': _files.length != 1, 'col-sm-12': _files.length == 1 }">
+                <span *ngIf="file.files.length == 0 && file.description == ''">Choose a file</span>
+                <span *ngIf="file.files.length == 0 && file.description != ''">Choose {{file.description}}</span>
+                <span *ngIf="file.files.length == 1">{{file.files[0].name}} ({{file.files[0].size}})</span>
+                <span *ngIf="file.files.length > 1">{{file.files.length}} files selected</span>
+                <input type="file" class="file" (fileSelect)="onFileSelect(i, $event)"
+                       multiple="multiple" file-select />
+            </label>
+        </fieldset>
+        <fieldset *ngIf="_files.length != 1" class="form-group text-right">
+            <input type="button" class="btn btn-success" [disabled]="!_enableUpload" value="Upload files"
+                   (click)="onFileUpload()">
+        </fieldset>
+    </form>
+    <div *ngIf="_state == 0 && _files.length == 1">
+        <p *ngIf="_files[0].minAmount != 1 && _files[0].maxAmount != 1">
+            <span *ngIf="_files[0].minAmount == 0">Upload </span>
+            <span *ngIf="_files[0].minAmount == 1">Upload at least {{_files[0].minAmount}} file and</span>
+            <span *ngIf="_files[0].minAmount > 1">Upload at least {{_files[0].minAmount}} files and</span>
+            <span *ngIf="_files[0].maxAmount == 1">a maximum of {{_files[0].maxAmount}} file.</span>
+            <span *ngIf="_files[0].maxAmount > 1">a maximum of {{_files[0].maxAmount}} files.</span>
+        </p>
+    </div>
+</div>

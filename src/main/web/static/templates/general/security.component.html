@@ -1,0 +1,23 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+            <h1>Oops! That was an error!</h1>
+        </div>
+        <div class="col-xs-12 col-sm-2 col-sm-offset-1 col-md-2 col-md-offset-2">
+            <p style="text-align:center;"><span class="fa fa-shield" style="font-size:1000%;"></span></p>
+        </div>
+        <div *ngIf="role != 'ROLE_NONE'" class="col-xs-12 col-sm-8 col-md-6">
+            <p>You do not have enough rights to access this page.</p>
+            <p>If you are certain that you should be able to access this page, please contact your teacher.</p>
+            <p>
+                <a [routerLink]="['Start']">
+                    I understand, go to a safe page »
+                </a>
+            </p>
+        </div>
+        <div *ngIf="role == 'ROLE_NONE'" class="col-xs-12 col-sm-8 col-md-6">
+            <p>You do not have access to the group feedback tool of this course.</p>
+            <p>If you are certain that you should be able to access this page, please contact your teacher.</p>
+        </div>
+    </div>
+</div>

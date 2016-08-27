@@ -1,0 +1,15 @@
+<form [ngFormModel]="form">
+    <div *ngIf="!preview && !number"
+         [ngClass]="{'has-error': required && (showHints || textField.dirty) && !textField.valid && !textField.pending}">
+        <textarea ngControl="textField" class="form-control" [(ngModel)]="value.label"></textarea>
+    </div>
+    <div *ngIf="number && getWeightDefined()"
+         [ngClass]="{'has-error': (showHints || numberWeightField.dirty) && !numberWeightField.valid && !numberWeightField.pending}">
+        <input  type="number" ngControl="numberWeightField" class="form-control" [(ngModel)]="value.weight" />
+    </div>
+    <div *ngIf="number && getValueDefined()"
+         [ngClass]="{'has-error': (showHints || numberValueField.dirty) && !numberValueField.valid && !numberValueField.pending}">
+        <input  type="number" ngControl="numberValueField" class="form-control" [(ngModel)]="value.value" />
+    </div>
+</form>
+<markdown *ngIf="preview && !number" [md]="value.label"></markdown>

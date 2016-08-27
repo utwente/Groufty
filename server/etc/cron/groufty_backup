@@ -1,0 +1,1 @@
+*/5 * * * * groufty-backup /var/groufty/bin/groufty-backup groufty >/dev/null 2>&1

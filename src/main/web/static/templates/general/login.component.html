@@ -1,0 +1,39 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2">
+            <h1>Welcome to Groufty</h1>
+            <messages [messages]="messages"></messages>
+        </div>
+        <div class="col-xs-12 col-sm-5 col-sm-offset-1 col-md-4 col-md-offset-2">
+            <img src="images/groufty.svg" class="left login groufty img-rounded" />
+            <img src="images/ut_logo_black_en.svg" class="left login authority img-rounded" />
+            <div class="clearfix"></div>
+            <p class="login-desc">Groufty is a Group Feedback Tool in which students submit tasks and review eachother on their work.</p>
+        </div>
+        <div class="col-xs-12 col-sm-5 col-md-4">
+            <p>Please login with your University of Twente ICTS account:</p>
+            <form class="form form-horizontal" [ngFormModel]="_loginForm">
+                <div class="form-group"
+                     [ngClass]="{ 'has-error': userId.dirty && !userId.valid && !userId.pending }">
+                    <label class="col-xs-12 col-sm-3 col-md-4 col-lg-3 control-label" for="userId">Username</label>
+                    <div class="col-xs-12 col-sm-9 col-md-8 col-lg-9">
+                        <input type="text" class="form-control" id="userId" placeholder="s-number or m-number"
+                               [disabled]="busy" [(ngModel)]="_creds.userId" ngControl="userId">
+                    </div>
+                </div>
+                <div class="form-group"
+                     [ngClass]="{ 'has-error': password.dirty && !password.valid && !password.pending }">
+                    <label class="col-xs-12 col-sm-3 col-md-4 col-lg-3 control-label" for="password">Password</label>
+                    <div class="col-xs-12 col-sm-9 col-md-8 col-lg-9">
+                        <input type="password" class="form-control" id="password" placeholder="Password"
+                               [disabled]="busy" [(ngModel)]="_creds.password" ngControl="password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-default pull-right" [disabled]="busy" (click)="login()">
+                    <span *ngIf="!busy">Login</span>
+                    <span *ngIf="busy"><i class='fa fa-circle-o-notch fa-spin'></i> Logging in...</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>

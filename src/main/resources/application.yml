@@ -1,0 +1,46 @@
+# Configuration
+# For full reference see
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# Configurations specific to a spring profile (like) should be put in application-${profile}.yml
+
+# Default we're on dev (see Application)
+# This can be overridden by Maven or by command line arguments at runtime
+security:
+  basic:
+    enabled: false
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming-strategy: nl.javalon.groufty.config.TablePrefixNamingStrategy
+    properties:
+      hibernate:
+        current_session_context_class: org.springframework.orm.hibernate4.SpringSessionContext
+  datasource:
+    initialize: false
+
+
+  jackson:
+    serialization-inclusion: NON_NULL
+    serialization:
+      INDENT_OUTPUT: true
+
+server:
+  session:
+    cookie:
+      name: 'groufty-session'
+      max-age: 86400
+    timeout: 86400
+
+multipart:
+  enabled: true
+  max-file-size: 50Mb
+  max-request-size: 50Mb
+
+groufty:
+  authentication:
+    enable-ldap-auth: false
+    enable-dev-auth: false
+  reviewer-selection-executor:
+    interval: '60000'

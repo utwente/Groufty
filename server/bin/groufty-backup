@@ -1,0 +1,210 @@
+#!/bin/bash
+# Script that creates PostgreSQL dumps of the databases of a groufty instance.
+# Automatically cleans up old backups.
+# Version: 2.0
+# Author: Remco de Man
+
+GROUFTY_BACKUP_DIR=/var/groufty/backup
+GROUFTY_BACKUP_TMP_DIR=/var/groufty/tmp
+GROUFTY_BACKUP_LOG_FILE=/var/log/groufty-backup.log
+GROUFTY_BACKUP_PERIOD_HOLD=7200
+GROUFTY_BACKUP_PERIOD_HOURLY=259200
+GROUFTY_BACKUP_PERIOD_DAILY=7776000
+
+function groufty_log {
+	local LOCAL_DATE=$(date +"%Y-%m-%d %H:%M:%S %z")
+	echo $LOCAL_DATE": "$1 >> $GROUFTY_BACKUP_LOG_FILE
+}
+
+function groufty_move_from_tmp {
+	mv $GROUFTY_BACKUP_TMP_DIR/$1 $2 > /dev/null
+	groufty_log "Moved $GROUFTY_BACKUP_TMP_DIR/$1 to $2."
+}
+
+function groufty_copy_to_tmp {
+	cp -f $1 $GROUFTY_BACKUP_TMP_DIR/ > /dev/null
+	groufty_log "Copied $1 to $GROUFTY_BACKUP_TMP_DIR/."
+}
+
+function groufty_cleanup_tmp {
+	rm -f $GROUFTY_BACKUP_TMP_DIR/backup_$1_*
+	groufty_log "Cleaned up $GROUFTY_BACKUP_TMP_DIR directory for instance $1."
+}
+
+function groufty_find_most_recent {
+	groufty_log "Finding most recent backup for instance $1 in $2..."
+	local LOCAL_RECENT=$(ls $2 | grep "^backup_$1_" | sort -r | head -n 1)
+	if [ -z "$LOCAL_RECENT" ]; then
+		groufty_log "No recent backup found for instance $1 in $2..."
+		echo ""
+		return
+	fi
+	groufty_log "$LOCAL_RECENT is the most recent backup for instance $1 in $2."
+	echo $LOCAL_RECENT
+}
+
+function groufty_gzip_tmp_file {
+	groufty_log "Starting gzip compression for $GROUFTY_BACKUP_TMP_DIR/$1..."
+	gzip $GROUFTY_BACKUP_TMP_DIR/$1
+	groufty_log "Finished gzip compression for $GROUFTY_BACKUP_TMP_DIR/$1."
+}
+
+function groufty_gunzip_tmp_file {
+	groufty_log "Starting gzip unzipping for $GROUFTY_BACKUP_TMP_DIR/$1..."
+	gunzip $GROUFTY_BACKUP_TMP_DIR/$1
+	groufty_log "Finished gzip unzipping for $GROUFTY_BACKUP_TMP_DIR/$1."
+}
+
+function groufty_backup_get_date_part {
+	local LOCAL_DATE=$(echo $1 | cut -f 4 -d '_')
+	local LOCAL_TIME=$(echo $1 | cut -f 5 -d '_')
+	local LOCAL_UNIX=$(echo $1 | cut -f 6 -d '_' | cut -f 1 -d '.')
+	case $2 in
+		Y)
+			echo ${LOCAL_DATE:0:4}
+			return
+		;;
+		m)
+			echo ${LOCAL_DATE:4:2}
+			return
+		;;
+		d)
+			echo ${LOCAL_DATE:6:2}
+			return
+		;;
+		H)
+			echo ${LOCAL_TIME:0:2}
+			return
+		;;
+		M)
+			echo ${LOCAL_TIME:2:2}
+			return
+		;;
+		S)
+			echo ${LOCAL_TIME:4:2}
+			return
+		;;
+		s)
+			echo $LOCAL_UNIX
+			return
+		;;
+	esac
+}
+
+function groufty_create_pgdump {
+	local LOCAL_DATE=$(date -u +"%Y%m%d_%H%M%S_%s")
+	local LOCAL_FILENAME="backup_$1_pgdump_$LOCAL_DATE.sql"
+	groufty_log "Creating SQL dump $LOCAL_FILENAME for instance $1..."
+	pg_dump $1 > $GROUFTY_BACKUP_TMP_DIR/$LOCAL_FILENAME
+	groufty_log "SQL dump $LOCAL_FILENAME for instance $1 successfully created."
+	echo $LOCAL_FILENAME
+}
+
+function groufty_vacuum_database {
+	groufty_log "Running vacuumlo on instance $1..."
+	vacuumlo $1
+	groufty_log "Execution of vacuumlo finished for instance $1"
+}
+
+function groufty_compare_tmp_files {
+	groufty_log "Comparing $1 and $2..."
+	local LOCAL_DIFF=$(diff $GROUFTY_BACKUP_TMP_DIR/$1 $GROUFTY_BACKUP_TMP_DIR/$2)
+	if [ -z "$LOCAL_DIFF" ]; then
+		groufty_log "Found no difference between $1 and $2."
+		echo "0"
+	else
+		groufty_log "The files $1 and $2 are different."
+		echo "1"
+	fi
+}
+
+function groufty_cleanup {
+	groufty_log "Cleaning up backups of instance $1..."
+
+	local LOCAL_FILES=$(ls $2 | grep "^backup_$1_" | sort)
+	local LOCAL_UNIX=$(date -u +"%s")
+
+	local PERIOD_HOLD=$((LOCAL_UNIX - GROUFTY_BACKUP_PERIOD_HOLD))
+	local PERIOD_HOURLY=$((LOCAL_UNIX - GROUFTY_BACKUP_PERIOD_HOURLY))
+	local PERIOD_DAILY=$((LOCAL_UNIX - GROUFTY_BACKUP_PERIOD_DAILY))
+
+	local LAST_HOUR=-1
+	local LAST_DAY=-1
+
+	for file in $LOCAL_FILES; do
+		local FILE_UNIX=$(groufty_backup_get_date_part $file "s")
+		if (("$FILE_UNIX" >= "$PERIOD_HOLD")); then
+			groufty_log "Keep backup $file for instance $1."
+		elif (("$FILE_UNIX" >= "$PERIOD_HOURLY")); then
+			local FILE_HOUR=$(groufty_backup_get_date_part $file "H")
+			if [[ "$FILE_HOUR" != "$LAST_HOUR" ]]; then
+				local LAST_HOUR=$FILE_HOUR
+				groufty_log "Keep backup $file for instance $1."
+			else
+				rm -f $2/$file
+				groufty_log "Removed obsolete backup $file for instance $1."
+			fi
+		elif (("$FILE_UNIX" >= "$PERIOD_DAILY")); then
+			local FILE_DAY=$(groufty_backup_get_date_part $file "d")
+			if [[ "$FILE_DAY" != "$LAST_DAY" ]]; then
+				local LAST_DAY=$FILE_DAY
+				groufty_log "Keep backup $file for instance $1."
+			else
+				rm -f $2/$file
+				groufty_log "Removed obsolete backup $file for instance $1."
+			fi
+		else
+			rm -f $2/$file
+			groufty_log "Removed obsolete backup $file for instance $1."
+		fi
+	done
+}
+
+GROUFTY_CMD_INSTANCE=
+GROUFTY_CMD_MULTIPLE=0
+
+groufty_log "Executing $0 $@..."
+while (( "$#" )); do
+	if [[ -n "$GROUFTY_CMD_INSTANCE" ]]; then
+		GROUFTY_CMD_MULTIPLE=1
+	fi
+	GROUFTY_CMD_INSTANCE="$GROUFTY_CMD_INSTANCE $1"
+	shift;
+done;
+
+if [[ -z "$GROUFTY_CMD_INSTANCE" ]]; then
+	groufty_log "No instances specified to backup."
+	exit 0
+fi
+
+if [[ "$GROUFTY_CMD_MULTIPLE" == "1" ]]; then
+	for instance in $GROUFTY_CMD_INSTANCE; do
+		groufty_log "Invoking backup for instance $instance..."
+		$0 $instance &
+	done
+	exit 0
+fi
+
+BACKUP_FILE=$(groufty_create_pgdump $GROUFTY_CMD_INSTANCE)
+RECENT_FILE=$(groufty_find_most_recent $GROUFTY_CMD_INSTANCE "$GROUFTY_BACKUP_DIR")
+if [[ -z "$RECENT_FILE" ]]; then
+	groufty_gzip_tmp_file "$BACKUP_FILE"
+	groufty_move_from_tmp "$BACKUP_FILE.gz" "$GROUFTY_BACKUP_DIR/"
+else
+	groufty_copy_to_tmp "$GROUFTY_BACKUP_DIR/$RECENT_FILE"
+	groufty_gunzip_tmp_file "$RECENT_FILE"
+	UNZIP_BASE=$(echo $RECENT_FILE | cut -f 1 -d '.')
+	COMPARE=$(groufty_compare_tmp_files "$BACKUP_FILE" "$UNZIP_BASE.sql")
+	if [[ "$COMPARE" == "1" ]]; then
+		groufty_gzip_tmp_file "$BACKUP_FILE"
+		groufty_move_from_tmp "$BACKUP_FILE.gz" "$GROUFTY_BACKUP_DIR/"
+	else
+		groufty_log "Updating name of $RECENT_FILE to $BACKUP_FILE.gz, since there are no changes..."
+		mv "$GROUFTY_BACKUP_DIR/$RECENT_FILE" "$GROUFTY_BACKUP_DIR/$BACKUP_FILE.gz"
+		groufty_log "Filename updated to $BACKUP_FILE.gz."
+	fi
+fi
+groufty_cleanup $GROUFTY_CMD_INSTANCE "$GROUFTY_BACKUP_DIR/"
+groufty_vacuum_database $GROUFTY_CMD_INSTANCE
+groufty_cleanup_tmp $GROUFTY_CMD_INSTANCE
+groufty_log "Backup script for instance $GROUFTY_CMD_INSTANCE finished."

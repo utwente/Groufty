@@ -1,0 +1,87 @@
+<form (ngSubmit)="onSubmit()" #BatchForm="ngForm">
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportTasks"
+				   ngControl="tasks" #tasks="ngForm" value="">
+			Tasks
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportTaskFiles"
+				   ngControl="taskFiles" #taskFiles="ngForm" value="">
+			Task files
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportTaskLists"
+				   ngControl="taskLists" #taskLists="ngForm" value="">
+			Task lists
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportUsers"
+				   ngControl="users" #users="ngForm" value="">
+			Users
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportGroups"
+				   ngControl="groups" #groups="ngForm" value="">
+			Groups
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportGroupings"
+				   ngControl="groupings" #groupings="ngForm" value="">
+			Groupings
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportReviewTemplates"
+				   ngControl="reviewTemplates" #reviewTemplates="ngForm" value="">
+			Review templates
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportReviews"
+				   ngControl="reviews" #reviews="ngForm" value="">
+			Reviews
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportSubmissions"
+				   ngControl="submissions" #submissions="ngForm" value="">
+			Submissions
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportSubmissionFiles"
+				   ngControl="submissionFiles" #submissionFiles="ngForm" value="">
+			Submission files
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportSubmissionLists"
+				   ngControl="submissionLists" #submissionLists="ngForm" value="">
+			Submission lists
+		</label>
+	</div>
+	<div class="checkbox">
+		<label>
+			<input type="checkbox" [(ngModel)]="options.exportReviewSelectionStrategy"
+				   ngControl="reviewSelectionStrategy" #reviewSelectionStrategy="ngForm" value="">
+			Review selection strategy
+		</label>
+	</div>
+	<button type="submit" class="btn btn-primary">Export</button>
+</form>

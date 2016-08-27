@@ -1,0 +1,89 @@
+<div class="container">
+	<h1>Task lists</h1>
+
+	<div class="pull-right">
+		<div class="btn-group" role="group" aria-label="Save">
+			<button (click)="browseToCreateTaskList()" type="button" class="btn btn-default" title="Add task list">
+				<span class="fa fa-plus"></span> Add task list
+			</button>
+		</div>
+	</div>
+
+	<p>This page provides an overview of all task lists. From here it is possible to add or edit task lists. Submission lists are visible for active or finalized task lists only.</p>
+
+	<messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+
+
+
+	<div class="row">
+		<table class="table row-hover">
+			<thead>
+			<tr>
+				<th class="col-md-2">Task List</th>
+				<th class="col-md-1">Audience</th>
+				<th class="col-md-1">Submissions</th>
+				<th class="col-md-1">Reviews</th>
+				<th class="col-md-1">Author</th>
+				<th class="col-md-1">Start</th>
+				<th class="col-md-1">Deadline</th>
+				<th class="col-md-1">Review deadline</th>
+				<th class="col-md-1">Status</th>
+				<th class="col-md-2">Actions</th>
+			</tr>
+			</thead>
+			<tbody *ngFor="let taskOverview of page.content; let i = index">
+			<tr>
+				<td>{{ taskOverview.taskListName }}</td>
+				<td>
+					<span *ngIf="taskOverview.submissionAudience == 'GROUP'" class="fa fa-users"></span>
+					<span *ngIf="taskOverview.submissionAudience == 'INDIVIDUAL'" class="fa fa-user"></span>
+					<a click="browseToGrouping(taskOverview.groupingId)"> {{ taskOverview.groupingName }}</a>
+				</td>
+				<td>{{ taskOverview.submittedSubmissionsCount }} / {{ taskOverview.submitterCount }}</td>
+				<td>{{ taskOverview.submittedReviewsCount }} / {{ taskOverview.reviewerCount }}</td>
+				<td>{{ taskOverview.authorName }}</td>
+				<td>{{ taskOverview.startDate | moment:"YYYY-MM-DD HH:mm" }}</td>
+				<td>{{ taskOverview.submissionDeadline | moment:"YYYY-MM-DD HH:mm" }}</td>
+				<td>{{ taskOverview.reviewDeadline | moment:"YYYY-MM-DD HH:mm" }}</td>
+				<td>{{ taskOverview.state | enumCleaner }}</td>
+				<td>
+					<a (click)="browseToEditTaskList(taskOverview.taskListId)"><span class="fa fa-pencil"></span> Edit task list</a><br>
+
+					<span *ngIf="taskOverview.state == 'ACTIVE' || taskOverview.state == 'FINALIZED'">
+						<a (click)="browseToSubmissionLists(taskOverview.taskListId)"><span class="fa fa-list-ol"></span> Submission lists</a><br>
+					</span>
+				</td>
+			</tr>
+			<!-- deprecated, this should be on the task-list-edit page
+			<tr *ngIf="expanded[i]" class="disable-hover">
+				<td colspan="12">
+					<span *ngIf="taskOverview.state == 'ACTIVE' || taskOverview.state == 'FINALIZED'">
+						<task-list-expand [task-list-id]="taskOverview.taskListId" [editable]="false"></task-list-expand>
+					</span>
+					<span *ngIf="taskOverview.state == 'DRAFT'">
+						<task-list-expand [task-list-id]="taskOverview.taskListId" [editable]="true" ></task-list-expand>
+						</span>
+				</td>
+			</tr>
+			<a (click)="browseToReviewTemplate(taskOverview.reviewTemplateId)"><span class="fa fa-calendar-check-o"></span> Review template</a><br>
+
+			-->
+			</tbody>
+		</table>
+		<nav>
+			<ul class="pagination pull-right">
+				<li *ngIf="!page.first">
+					<a (click)="prevPage()" aria-label="Previous">
+						<i class="fa fa-angle-double-left"></i>
+					</a>
+				</li>
+				<li *ngFor="let i of getNumber(page.totalPages); let i = index"><a (click)="navigate(i)">{{ i+1 }}</a></li>
+				<li *ngIf="!page.last">
+					<a (click)="nextPage()" aria-label="Next">
+						<i class="fa fa-angle-double-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>

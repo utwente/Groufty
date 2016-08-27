@@ -1,0 +1,12 @@
+<container>
+	<div class="col-md-6">
+		<p>Import files</p>
+
+		<file-upload [autoUpload]="false" [files]="descriptors"
+		             [apiUrl]="'api/v1/inout'"></file-upload>
+	</div>
+	<div class="col-md-6">
+		<p>Export files</p>
+		<batch-export></batch-export>
+	</div>
+</container>

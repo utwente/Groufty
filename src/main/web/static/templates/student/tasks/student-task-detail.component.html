@@ -1,0 +1,78 @@
+<div class="container-fluid">
+    <div class="col-md-offset-1" *ngIf="showErrorPage">
+        <h1>{{ errorMsg }}</h1>
+    </div>
+    <div class="row" *ngIf="!showErrorPage">
+        <div class="col-md-5 col-md-offset-1">
+            <h1>{{ taskDetail.taskName }}</h1>
+            <h3>Description</h3>
+            <markdown [md]="taskDetail.description"></markdown>
+            <div>
+                <pdf *ngIf="hasTaskPdf" [file]="'api/v1/tasks/' + taskDetail.taskId + '/file'"></pdf>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <h1>Submission<small> deadline {{ taskDetail.submissionDeadline | moment:"YYYY-MM-DD HH:mm" }}</small></h1>
+            <h4>State
+                <small>
+                    <span *ngIf="submitted">Submitted</span>
+                    <span *ngIf="!submitted">Open</span>
+                </small>
+            </h4>
+            <span *ngIf="deadlinePassed">
+                <alert [dismissible]="false">Submission deadline has passed. You can no longer edit this submission.</alert>
+            </span>
+            <p *ngIf="groupSubmission && !deadlinePassed">You are writing this submission as {{ taskDetail.authorName }}</p>
+            <h4 *ngIf="deadlinePassed">Grade
+                <small>
+                    <span *ngIf="taskDetail.grade != undefined">{{ taskDetail.grade }}</span>
+                </small>
+            </h4>
+            <messages *ngIf="messages.length > 0" [messages]="messages"></messages>
+
+
+            <div class="pull-right">
+                <div *ngIf="!pdfSubmission && !fileSubmission" aria-label="Save" class="btn-group" role="group">
+                    <button class="btn btn-default" (click)="submitSubmission(submitted)"><span class="fa fa-save"></span></button>
+                </div>
+                <div aria-label="Submit" class="btn-group" role="group">
+                    <button *ngIf="!submitted && !deadlinePassed" type="button" class="btn btn-success" (click)="submitSubmission(true)">Submit</button>
+                    <button *ngIf="submitted && !deadlinePassed" type="button" class="btn btn-danger" (click)="submitSubmission(false)">Unsubmit</button>
+                </div>
+            </div>
+
+
+            <br><br>
+
+            <div *ngIf="pdfSubmission">
+                <div *ngIf="!deadlinePassed">
+                    <file-upload [autoUpload]="true" [files]="descriptors" (onUploadDone)="onUploadComplete()" (onUploadStart)="onUploadStart()"
+                                 [apiUrl]="'api/v1/submissions/' + taskDetail.taskId + '/' + taskDetail.authorId + '/file'"></file-upload>
+                </div>
+                <br>
+                <div *ngIf="displaySubmission" class="row">
+                    <h3>Preview</h3>
+                    <pdf [file]="'api/v1/submissions/' + taskDetail.taskId + '/' + taskDetail.authorId + '/file'"></pdf>
+                </div>
+            </div>
+
+            <div class="markdown" *ngIf="!pdfSubmission && !fileSubmission">
+                <textarea *ngIf="!deadlinePassed" class="form-control" rows="15"
+                          [(ngModel)]="submissionText" (keyup)="onAutosaveDetect()"></textarea>
+                <p>Last saved: {{ lastSaved | moment:"YYYY-MM-DD HH:mm" }}</p>
+                <h3>Preview</h3>
+                <div class="well">
+                    <markdown [md]="submissionText"></markdown>
+                </div>
+            </div>
+
+            <div *ngIf="fileSubmission">
+                <a *ngIf="displaySubmission" href="api/v1/submissions/{{ taskDetail.taskId }}/{{ taskDetail.authorId }}/file" class="btn btn-default">
+                    <span class="fa fa-download"></span> Download submission
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
